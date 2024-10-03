@@ -7,7 +7,7 @@ const app = expres();
 const port = process.env.PORT ?? 3000;
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 let userData: Array<Record<string, string>> = [];
 
 app.use(cors()); //enable cors
@@ -20,7 +20,7 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
     res.status(500).json({ message: "file is required" });
   }
   // 3. validate the mimetype (cvs)
-  if (file!.mimetype === "text/csv") {
+  if (file!.mimetype !== "text/csv") {
     res.status(500).json({ message: "file must be a csv" });
   }
 
@@ -30,7 +30,7 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
     const rawCsv = Buffer.from(file!.buffer).toString("utf-8");
     console.log(rawCsv);
     // 5. transform the string (csv) to json
-    json = csvTojson.csvStringToJson(rawCsv);
+    json = csvTojson.fieldDelimiter(",").csvStringToJson(rawCsv);
   } catch (error) {
     res.status(500).json({ message: "error parsing the file" });
   }
@@ -38,7 +38,9 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
   // 6. save de Json to db (or memory)
   userData = json;
   //7 return 200 with the message and the json
-  res.json({ data: json, message: "el archivo se cargo correctamente" });
+  res
+    .status(200)
+    .json({ data: json, message: "el archivo se cargo correctamente" });
 });
 
 app.get("/api/users", async (req, res) => {
