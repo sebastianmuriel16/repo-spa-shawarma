@@ -59,12 +59,14 @@ app.get("/api/users", async (req, res) => {
   //4. return 200 with the filter data
   const filteredData = userData.filter((row) => {
     return Object.values(row).some((value) => {
-      value.toLocaleLowerCase().includes(search);
+      return value.toLocaleLowerCase().includes(search);
     });
   });
 
   res.status(200).json({ data: filteredData });
 });
+
+console.log("Server running on port 3000");
 
 app.listen(port, () => {
   console.log(`Listening on port  http://localhost:${port}`);
